@@ -9,18 +9,25 @@
     overflow-x: auto;
     white-space: nowrap;
 }
-    nav ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;         /* Biar menu sejajar */
-        justify-content: center;
-        gap: 20px;             /* Jarak antar menu */
-    }
+nav {
+    overflow-x: auto;      /* Supaya bisa geser kiri-kanan */
+    white-space: nowrap;   /* Supaya menu tidak turun ke bawah */
+    display: block;
+}
 
-    nav a {
-        white-space: nowrap;   /* Mencegah teks turun */
-    }
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: inline-flex;  /* Biar semua menu tetap 1 baris */
+    gap: 20px;
+}
+
+nav a {
+    display: inline-block;
+    padding: 10px 5px;
+    white-space: nowrap;   /* Cegah teks Social Media turun */
+}
 </style>
     <style>
         body {
