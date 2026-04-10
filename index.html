@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <title>Website Saya</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <style>
- nav {
+<style>
+nav {
     overflow-x: auto;
     white-space: nowrap;
 }
@@ -30,6 +30,50 @@ nav a {
 }
 </style>
     <style>
+    /* Gaya Ikon Hamburger (3 garis putih) */
+.menu-icon {
+  cursor: pointer;
+  display: inline-block;
+  padding: 10px;
+}
+
+.menu-icon span {
+  display: block;
+  width: 25px;
+  height: 3px;
+  background-color: white;
+  margin: 5px 0;
+}
+
+/* Gaya Sidebar */
+.sidebar {
+  height: 100%;
+  width: 0; /* Awalnya lebar 0 (tersembunyi) */
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  transition: 0.5s; /* Efek halus saat muncul */
+  padding-top: 60px;
+}
+
+.sidebar a {
+  padding: 8px 32px;
+  text-decoration: none;
+  font-size: 20px;
+  color: #818181;
+  display: block;
+}
+
+.sidebar .closebtn {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  font-size: 36px;
+}
+
         body {
             font-family: Arial,Sans-Serif ;
             margin: 0;
@@ -40,13 +84,12 @@ nav a {
             background: #0077ff;
             padding: 15px;
             color: white;
-            
         }
 
         nav {
             background: #005fcc;
             padding: 10px;
-            
+            text-align: center;
         }
 
         nav a {
@@ -75,11 +118,29 @@ nav a {
 <body>
 
 <header>
+ <!-- Ikon Hamburger -->
+<div class="menu-icon" onclick="toggleNav()">
+  <span></span>
+  <span></span>
+  <span></span>
+</div>
+
+<!-- Sidebar -->
+<div id="mySidebar" class="sidebar">
+  <a href="javascript:void(0)" class="closebtn" onclick="toggleNav()">&times;</a>
+  <a href="index.html">- Home</a>
+  <a href="biodata.html">- Biodata</a>
+  <a href="social.html">- Social Media</a>
+  <a href="prestasi.html">- prestasi</a>
+  <a href="Tentangwebini.html">- tentang web ini</a>
+</div>
+ 
     <h1>Website Pribadi Saya</h1>
-      <p>Muhammad Naufal Aprilio</p>
+    <p>Muhammad Naufal Aprilio</p>
 </header>
 
 <nav>
+  
     <ul>
         <li><a href="index.html">Home</a></li>
         <li><a href="biodata.html">Biodata</a></li>
@@ -101,6 +162,7 @@ nav a {
     </a>
 
 </div>
+</a>
       <div class="container">
       <div class="card">
         <h2 id="index.html">Home</h2>
@@ -113,7 +175,6 @@ nav a {
     </div>
     
 </a></p>
-
    
     <div class="card">
       
@@ -121,7 +182,14 @@ nav a {
         <p>"Jangan pernah menyerah"</p>
     </div>
     
-
-
+<script>function toggleNav() {
+  var sidebar = document.getElementById("mySidebar");
+  if (sidebar.style.width === "250px") {
+    sidebar.style.width = "0";
+  } else {
+    sidebar.style.width = "250px";
+  }
+}
+</script>
 </body>
 </html>
