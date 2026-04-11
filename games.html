@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Page Title</title>
+    </head>
+    <body>
+        
+    </body>
+    
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Snake Fixed Version</title>
+<style>
+    body { margin:0; overflow:hidden; background:#111; }
+    canvas { display:block; background:#000; }
+
+    /* Joystick */
+    #joy {
+        position:fixed; bottom:40px; left:40px;
+        width:120px; height:120px;
+        background:rgba(255,255,255,0.15);
+        border-radius:50%;
+        touch-action:none;
+    }
+    #knob {
+        width:40px; height:40px;
+        background:white;
+        border-radius:50%;
+        position:absolute; left:40px; top:40px;
+    }
+
+    #scoreText {
+        position:fixed; 
+        top:15px; left:20px; 
+        color:white;
+        font-family:Arial;
+        font-size:28px;
+    }
+</style>
+</head>
+<body>
+
+<div id="scoreText">Score: 0</div>
+
+<canvas id="game"></canvas>
+
+<div id="joy"><div id="knob"></div></div>
+
+<script>
+// =======================================
+// CANVAS
+// =======================================
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+
+const MAP = 3500;
+
+// =======================================
+// UTILS
+// =======================================
+function randPos(){
+    return {
+        x: Math.random()*MAP,
+        y: Math.random()*MAP
+    };
+}
+
+// =======================================
+// SCORE
+// =======================================
+let score = 0;
+const scoreText = document.getElementById("scoreText");
+
+// =======================================
+// SNAKE CLASS (PLAYER & BOT)
+// =======================================
+class Snake {
+    constructor(x, y, color, isBot=false){
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.radius = 15;
+        this.speed = isBot ? 1.6 : 2;
+        this.angle = Math.random()*Math.PI*2;
+        this.isBot = isBot;
+        this.alive = true;
+        this.respawn = 0;
+    }
+
+    update(){
+        if(!this.alive){
+            this.respawn--;
+            if(this.respawn <= 0 && this.isBot){
+                let p = randPos();
+                this.x = p.x;
+                this.y = p.y;
+                this.radius = 15;
+                this.alive = true;
+            }
+            return;
+        }
+
+        if(this.isBot){
+            this.angle += (Math.random()*0.3 - 0.15);
+        }
+
+        this.x += Math.cos(this.angle)*this.speed;
+        this.y += Math.sin(this.angle)*this.speed;
+
+        // world boundaries
+        if(this.x < 0) this.x = MAP;
+        if(this.x > MAP) this.x = 0;
+        if(this.y < 0) this.y = MAP;
+        if(this.y > MAP) this.y = 0;
+    }
+
+    draw(){
+        if(!this.alive) return;
+        ctx.beginPath();
+        ctx.fillStyle = this.color;
+        ctx.arc(this.x - camX, this.y - camY, this.radius, 0, Math.PI*2);
+        ctx.fill();
+    }
+}
+
+// =======================================
+// CREATE PLAYER + MANY BOTS
+// =======================================
+let player = new Snake(MAP/2, MAP/2, "lime");
+
+let bots = [];
+for(let i=0;i<20;i++){
+    let p = randPos();
+    bots.push(new Snake(p.x, p.y, "red", true));
+}
+
+// =======================================
+// FOOD SYSTEM
+// =======================================
+let food = [];
+for(let i=0;i<200;i++){
+    let p = randPos();
+    food.push({x:p.x, y:p.y});
+}
+
+// Spawn 10 foods every 5 seconds
+setInterval(()=>{
+    for(let i=0;i<10;i++){
+        let p = randPos();
+        food.push({x:p.x,y:p.y});
+    }
+}, 5000);
+
+// =======================================
+// CAMERA FOLLOW
+// =======================================
+let camX = 0, camY = 0;
+function updateCamera(){
+    camX = player.x - canvas.width/2;
+    camY = player.y - canvas.height/2;
+}
+
+// =======================================
+// COLLISIONS
+// =======================================
+function checkEat(){
+    food = food.filter(f=>{
+        let dx = f.x - player.x;
+        let dy = f.y - player.y;
+        if(dx*dx + dy*dy < player.radius*player.radius){
+            player.radius += 1;
+            score++;
+            scoreText.innerText = "Score: " + score;
+            return false;
+        }
+        return true;
+    });
+}
+
+function checkBotDeath(){
+    bots.forEach(bot=>{
+        if(!bot.alive) return;
+
+        let dx = bot.x - player.x;
+        let dy = bot.y - player.y;
+
+        if(dx*dx + dy*dy < (bot.radius + player.radius)**2){
+            bot.alive = false;
+            bot.respawn = 60 * 60; // 1 menit (60 fps)
+
+            for(let i=0;i<6;i++){
+                food.push({
+                    x: bot.x + Math.random()*40-20,
+                    y: bot.y + Math.random()*40-20
+                });
+            }
+        }
+    });
+}
+
+// =======================================
+// JOYSTICK
+// =======================================
+let joy = document.getElementById("joy");
+let knob = document.getElementById("knob");
+
+let joyActive = false;
+
+joy.addEventListener("touchstart",()=>joyActive=true);
+joy.addEventListener("touchend",()=>{
+    joyActive=false;
+    knob.style.left="40px";
+    knob.style.top="40px";
+});
+
+joy.addEventListener("touchmove",e=>{
+    let rect = joy.getBoundingClientRect();
+    let x = e.touches[0].clientX - (rect.left + rect.width/2);
+    let y = e.touches[0].clientY - (rect.top + rect.height/2);
+
+    let max = 40;
+    let d = Math.sqrt(x*x+y*y);
+    if(d > max){
+        x = x/d*max;
+        y = y/d*max;
+    }
+
+    knob.style.left = (40 + x)+"px";
+    knob.style.top = (40 + y)+"px";
+
+    player.angle = Math.atan2(y,x);
+});
+
+// =======================================
+// GAME LOOP
+// =======================================
+function loop(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    updateCamera();
+
+    player.update();
+    bots.forEach(b=>b.update());
+
+    checkEat();
+    checkBotDeath();
+       // draw food
+    ctx.fillStyle="yellow";
+    food.forEach(f=>{
+        ctx.beginPath();
+        ctx.arc(f.x - camX, f.y - camY, 6, 0, Math.PI*2);
+        ctx.fill();
+    });
+
+    // draw snakes
+    player.draw();
+    bots.forEach(b=>b.draw());
+
+    requestAnimationFrame(loop);
+}
+loop();
+</script>
+
+</body>
+</html>
